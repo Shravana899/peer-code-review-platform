@@ -1,6 +1,188 @@
-<?php require "config.php";$id=(int)($_GET["id"]??0);$s=$conn->prepare("SELECT * FROM submissions WHERE id=?");$s->bind_param("i",$id);$s->execute();$sub=$s->get_result()->fetch_assoc();if(!$sub)die("Submission not found");
-if($_SERVER["REQUEST_METHOD"]==="POST"){$reviewer=trim($_POST["reviewer_name"]);$type=$_POST["comment_type"];$line=$_POST["line_number"]===""?NULL:(int)$_POST["line_number"];$comment=trim($_POST["comment"]);if($reviewer&&$comment){$q=$conn->prepare("INSERT INTO comments(submission_id,reviewer_name,comment_type,line_number,comment) VALUES(?,?,?,?,?)");$q->bind_param("issis",$id,$reviewer,$type,$line,$comment);$q->execute();$u=$conn->prepare("UPDATE submissions SET status='Reviewed' WHERE id=?");$u->bind_param("i",$id);$u->execute();header("Location:view.php?id=$id");exit;}}
-$q=$conn->prepare("SELECT * FROM comments WHERE submission_id=? ORDER BY created_at");$q->bind_param("i",$id);$q->execute();$comments=$q->get_result();?><!doctype html><html><head><meta charset="utf-8"><title>Review Code</title><link rel="stylesheet" href="style.css"></head><body><header class="topbar"><div class="brand"><div class="brand-icon">&lt;/&gt;</div><b>Peer Code Review Platform</b></div><nav><a href="index.php">Dashboard</a><a href="submissions.php">View Submissions</a></nav></header><main class="page"><a class="back" href="submissions.php">← Back</a><h1>View Code & Review</h1><p>Review the submitted code and add comments.</p><div class="review"><section><div class="panel"><div class="panel-head"><b>▣ Submitted Code</b><span><?=$sub["language"]?></span></div><div class="code"><?php foreach(explode("\n",$sub["code"]) as $n=>$line): ?><?=($n+1)."  ".htmlspecialchars($line)."\n"?><?php endforeach;?></div></div>
-<div class="comment-card"><h3>💬 General Comment</h3><form method="post"><input type="hidden" name="comment_type" value="General"><input type="hidden" name="line_number" value=""><input name="reviewer_name" placeholder="Reviewer name" required><textarea name="comment" placeholder="Write your feedback..." required></textarea><button class="btn">＋ Add Comment</button></form></div>
-<div class="comment-card"><h3>⌘ Line Comment</h3><form method="post"><input type="hidden" name="comment_type" value="Line"><input name="reviewer_name" placeholder="Reviewer name" required><input type="number" name="line_number" placeholder="Line number" required><textarea name="comment" placeholder="Write line feedback..." required></textarea><button class="btn">＋ Add Line Comment</button></form></div></section>
-<aside><div class="meta-card"><h3>Submission Details</h3><p>Student: <b><?=$sub["student_name"]?></b></p><p>Title: <b><?=$sub["title"]?></b></p><p>Language: <b><?=$sub["language"]?></b></p><p>Status: <span class="status <?=str_replace(" ","-",$sub["status"])?>"><?=$sub["status"]?></span></p></div><div class="comment-card feedback"><h3>✓ Review Feedback</h3><?php if($comments->num_rows===0):?><p>No feedback yet.</p><?php else:while($c=$comments->fetch_assoc()):?><div class="feedback-item"><b><?=$c["comment_type"]?><?=$c["line_number"]?" · Line ".$c["line_number"]:""?></b><small> By <?=$c["reviewer_name"]?></small><p><?=nl2br(htmlspecialchars($c["comment"]))?></p></div><?php endwhile;endif;?></div><div class="meta-card"><b>Final Status</b><p><?=$sub["status"]==="Reviewed"?"Well done! Your code has been reviewed.":"Waiting for peer review."?></p></div></aside></div></main></body></html>
+```php
+<?php
+require "config.php";
+$id=(int)($_GET["id"]??0);
+$s=$conn->prepare("SELECT * FROM submissions WHERE id=?");
+$s->bind_param("i",$id);
+$s->execute();
+$sub=$s->get_result()->fetch_assoc();
+if(!$sub)die("Submission not found");
+
+if($_SERVER["REQUEST_METHOD"]==="POST"){
+    $reviewer=trim($_POST["reviewer_name"]);
+    $type=$_POST["comment_type"];
+    $line=$_POST["line_number"]===""?NULL:(int)$_POST["line_number"];
+    $comment=trim($_POST["comment"]);
+
+    if($reviewer&&$comment){
+        $q=$conn->prepare("INSERT INTO comments(submission_id,reviewer_name,comment_type,line_number,comment) VALUES(?,?,?,?,?)");
+        $q->bind_param("issis",$id,$reviewer,$type,$line,$comment);
+        $q->execute();
+
+        $u=$conn->prepare("UPDATE submissions SET status='Reviewed' WHERE id=?");
+        $u->bind_param("i",$id);
+        $u->execute();
+
+        header("Location:view.php?id=$id");
+        exit;
+    }
+}
+
+$q=$conn->prepare("SELECT * FROM comments WHERE submission_id=? ORDER BY created_at");
+$q->bind_param("i",$id);
+$q->execute();
+$comments=$q->get_result();
+?>
+
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Review Code</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="topbar">
+    <div class="brand">
+        <div class="brand-icon">
+            &lt;/&gt;
+        </div>
+        <b>Peer Code Review Platform</b>
+    </div>
+
+    <nav>
+        <a href="index.php">Dashboard</a>
+        <a href="submissions.php">View Submissions</a>
+    </nav>
+</header>
+
+<main class="page">
+
+    <a class="back" href="submissions.php">← Back</a>
+
+    <h1>View Code & Review</h1>
+    <p>Review the submitted code and add comments.</p>
+
+    <div class="review">
+
+        <section>
+
+            <div class="panel">
+
+                <div class="panel-head">
+                    <b>▣ Submitted Code</b>
+                    <span><?=$sub["language"]?></span>
+                </div>
+
+                <div class="code">
+                    <?php foreach(explode("\n",$sub["code"]) as $n=>$line): ?>
+                        <?=($n+1)."  ".htmlspecialchars($line)."\n"?>
+                    <?php endforeach;?>
+                </div>
+
+            </div>
+
+            <div class="comment-card">
+
+                <h3>💬 General Comment</h3>
+
+                <form method="post">
+
+                    <input type="hidden" name="comment_type" value="General">
+                    <input type="hidden" name="line_number" value="">
+                    <input name="reviewer_name" placeholder="Reviewer name" required>
+                    <textarea name="comment" placeholder="Write your feedback..." required></textarea>
+                    <button class="btn">＋ Add Comment</button>
+
+                </form>
+
+            </div>
+
+            <div class="comment-card">
+
+                <h3>⌘ Line Comment</h3>
+
+                <form method="post">
+
+                    <input type="hidden" name="comment_type" value="Line">
+                    <input name="reviewer_name" placeholder="Reviewer name" required>
+                    <input type="number" name="line_number" placeholder="Line number" required>
+                    <textarea name="comment" placeholder="Write line feedback..." required></textarea>
+                    <button class="btn">＋ Add Line Comment</button>
+
+                </form>
+
+            </div>
+
+        </section>
+
+        <aside>
+
+            <div class="meta-card">
+
+                <h3>Submission Details</h3>
+
+                <p>Student: <b><?=$sub["student_name"]?></b></p>
+                <p>Title: <b><?=$sub["title"]?></b></p>
+                <p>Language: <b><?=$sub["language"]?></b></p>
+                <p>
+                    Status:
+                    <span class="status <?=str_replace(" ","-",$sub["status"])?>">
+                        <?=$sub["status"]?>
+                    </span>
+                </p>
+
+            </div>
+
+            <div class="comment-card feedback">
+
+                <h3>✓ Review Feedback</h3>
+
+                <?php if($comments->num_rows===0):?>
+
+                    <p>No feedback yet.</p>
+
+                <?php else:while($c=$comments->fetch_assoc()):?>
+
+                    <div class="feedback-item">
+
+                        <b>
+                            <?=$c["comment_type"]?>
+                            <?=$c["line_number"]?" · Line ".$c["line_number"]:""?>
+                        </b>
+
+                        <small>
+                            By <?=$c["reviewer_name"]?>
+                        </small>
+
+                        <p>
+                            <?=nl2br(htmlspecialchars($c["comment"]))?>
+                        </p>
+
+                    </div>
+
+                <?php endwhile;endif;?>
+
+            </div>
+
+            <div class="meta-card">
+
+                <b>Final Status</b>
+
+                <p>
+                    <?=$sub["status"]==="Reviewed"?"Well done! Your code has been reviewed.":"Waiting for peer review."?>
+                </p>
+
+            </div>
+
+        </aside>
+
+    </div>
+
+</main>
+
+</body>
+</html>
+```
