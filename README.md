@@ -20,4 +20,11 @@ Frontend: HTML/CSS | Backend: PHP | Database: MySQL | Server: XAMPP
 6. Submit code, open it, and test general/line comments.
 
 ## Screenshots
-Add your actual screenshots after running the project.
+![dashboard](dashboard.png)
+![submitcode](submitcode.png)
+![Line-general_comment](Line-general_comment.png)
+![status_tracking](status_tracking.png)
+![feedback](feedback.png)
+
+
+
