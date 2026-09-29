@@ -1,1 +1,105 @@
-<?php require "config.php";$r=$conn->query("SELECT * FROM submissions ORDER BY created_at DESC");?><!doctype html><html><head><meta charset="utf-8"><title>Submissions</title><link rel="stylesheet" href="style.css"></head><body><header class="topbar"><div class="brand"><div class="brand-icon">&lt;/&gt;</div><b>Peer Code Review Platform</b></div><nav><a href="index.php">Dashboard</a><a href="submissions.php">View Submissions</a></nav></header><main class="page"><a class="back" href="index.php">← Back</a><section class="panel"><div class="panel-head"><div><h1>All Submissions</h1><p>View submitted code and review progress.</p></div><a class="btn" href="submit.php">＋ Submit Code</a></div><table><tr><th>ID</th><th>STUDENT</th><th>TITLE</th><th>LANGUAGE</th><th>STATUS</th><th>ACTION</th></tr><?php while($x=$r->fetch_assoc()):?><tr><td>#<?=$x["id"]?></td><td><?=htmlspecialchars($x["student_name"])?></td><td><?=htmlspecialchars($x["title"])?></td><td><?=htmlspecialchars($x["language"])?></td><td><span class="status <?=str_replace(" ","-",$x["status"])?>"><?=$x["status"]?></span></td><td><a class="btn" href="view.php?id=<?=$x["id"]?>">Open</a></td></tr><?php endwhile;?></table></section></main></body></html>
+<?php
+require "config.php";
+
+$r = $conn->query(
+    "SELECT * FROM submissions ORDER BY created_at DESC"
+);
+?>
+
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Submissions</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="topbar">
+
+    <div class="brand">
+        <div class="brand-icon">
+            &lt;/&gt;
+        </div>
+
+        <b>Peer Code Review Platform</b>
+    </div>
+
+    <nav>
+        <a href="index.php">Dashboard</a>
+        <a href="submissions.php">View Submissions</a>
+    </nav>
+
+</header>
+
+<main class="page">
+
+    <a class="back" href="index.php">← Back</a>
+
+    <section class="panel">
+
+        <div class="panel-head">
+
+            <div>
+                <h1>All Submissions</h1>
+                <p>View submitted code and review progress.</p>
+            </div>
+
+            <a class="btn" href="submit.php">＋ Submit Code</a>
+
+        </div>
+
+        <table>
+
+            <tr>
+                <th>ID</th>
+                <th>STUDENT</th>
+                <th>TITLE</th>
+                <th>LANGUAGE</th>
+                <th>STATUS</th>
+                <th>ACTION</th>
+            </tr>
+
+            <?php while ($x = $r->fetch_assoc()): ?>
+
+                <tr>
+                    <td>
+                        #<?= $x["id"] ?>
+                    </td>
+
+                    <td>
+                        <?= htmlspecialchars($x["student_name"]) ?>
+                    </td>
+
+                    <td>
+                        <?= htmlspecialchars($x["title"]) ?>
+                    </td>
+
+                    <td>
+                        <?= htmlspecialchars($x["language"]) ?>
+                    </td>
+
+                    <td>
+                        <span class="status <?= str_replace(" ", "-", $x["status"]) ?>">
+                            <?= $x["status"] ?>
+                        </span>
+                    </td>
+
+                    <td>
+                        <a class="btn" href="view.php?id=<?= $x["id"] ?>">
+                            Open
+                        </a>
+                    </td>
+                </tr>
+
+            <?php endwhile; ?>
+
+        </table>
+
+    </section>
+
+</main>
+
+</body>
+</html>
